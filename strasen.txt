@@ -1,0 +1,124 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// Función para sumar dos matrices
+vector<vector<int>> sumarMatrices(const vector<vector<int>>& matrizA, const vector<vector<int>>& matrizB) {
+    int n = matrizA.size();
+    vector<vector<int>> resultado(n, vector<int>(n));
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            resultado[i][j] = matrizA[i][j] + matrizB[i][j];
+        }
+    }
+
+    return resultado;
+}
+
+// Función para restar dos matrices
+vector<vector<int>> restarMatrices(const vector<vector<int>>& matrizA, const vector<vector<int>>& matrizB) {
+    int n = matrizA.size();
+    vector<vector<int>> resultado(n, vector<int>(n));
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            resultado[i][j] = matrizA[i][j] - matrizB[i][j];
+        }
+    }
+
+    return resultado;
+}
+
+// Función para multiplicar dos matrices usando el algoritmo de Strassen
+vector<vector<int>> multiplicacionStrassen(const vector<vector<int>>& matrizA, const vector<vector<int>>& matrizB) {
+    int n = matrizA.size();
+
+    // Caso base: matrices de 1x1
+    if (n == 1) {
+        vector<vector<int>> resultado(1, vector<int>(1));
+        resultado[0][0] = matrizA[0][0] * matrizB[0][0];
+        return resultado;
+    }
+
+    // División de las matrices en submatrices
+    int mitad = n / 2;
+
+    vector<vector<int>> A11(mitad, vector<int>(mitad));
+    vector<vector<int>> A12(mitad, vector<int>(mitad));
+    vector<vector<int>> A21(mitad, vector<int>(mitad));
+    vector<vector<int>> A22(mitad, vector<int>(mitad));
+
+    vector<vector<int>> B11(mitad, vector<int>(mitad));
+    vector<vector<int>> B12(mitad, vector<int>(mitad));
+    vector<vector<int>> B21(mitad, vector<int>(mitad));
+    vector<vector<int>> B22(mitad, vector<int>(mitad));
+
+    for (int i = 0; i < mitad; i++) {
+        for (int j = 0; j < mitad; j++) {
+            A11[i][j] = matrizA[i][j];
+            A12[i][j] = matrizA[i][j + mitad];
+            A21[i][j] = matrizA[i + mitad][j];
+            A22[i][j] = matrizA[i + mitad][j + mitad];
+
+            B11[i][j] = matrizB[i][j];
+            B12[i][j] = matrizB[i][j + mitad];
+            B21[i][j] = matrizB[i + mitad][j];
+            B22[i][j] = matrizB[i + mitad][j + mitad];
+        }
+    }
+
+    // Cálculo de los productos necesarios para el algoritmo de Strassen
+    vector<vector<int>> P1 = multiplicacionStrassen(sumarMatrices(A11, A22), sumarMatrices(B11, B22));
+    vector<vector<int>> P2 = multiplicacionStrassen(sumarMatrices(A21, A22), B11);
+    vector<vector<int>> P3 = multiplicacionStrassen(A11, restarMatrices(B12, B22));
+    vector<vector<int>> P4 = multiplicacionStrassen(A22, restarMatrices(B21, B11));
+    vector<vector<int>> P5 = multiplicacionStrassen(sumarMatrices(A11, A12), B22);
+    vector<vector<int>> P6 = multiplicacionStrassen(restarMatrices(A21, A11), sumarMatrices(B11, B12));
+    vector<vector<int>> P7 = multiplicacionStrassen(restarMatrices(A12, A22), sumarMatrices(B21, B22));
+
+    // Cálculo de las submatrices del resultado
+    vector<vector<int>> C11 = sumarMatrices(restarMatrices(sumarMatrices(P1, P4), P5), P7);
+    vector<vector<int>> C12 = restarMatrices(P3, P2);
+    vector<vector<int>> C21 = sumarMatrices(P2, P4);
+    vector<vector<int>> C22 = sumarMatrices(restarMatrices(sumarMatrices(P1, P3), P2), P6);
+
+    // Construcción de la matriz resultado
+    vector<vector<int>> resultado(n, vector<int>(n));
+
+    for (int i = 0; i < mitad; i++) {
+        for (int j = 0; j < mitad; j++) {
+            resultado[i][j] = C11[i][j];
+            resultado[i][j + mitad] = C12[i][j];
+            resultado[i + mitad][j] = C21[i][j];
+            resultado[i + mitad][j + mitad] = C22[i][j];
+        }
+    }
+
+    return resultado;
+}
+
+int main() {
+    vector<vector<int>> matrizA = {
+        {1, 2},
+        {3, 4}
+    };
+
+    vector<vector<int>> matrizB = {
+        {5, 6},
+        {7, 8}
+    };
+
+    vector<vector<int>> resultado = multiplicacionStrassen(matrizA, matrizB);
+
+    cout << "Resultado de la multiplicación de matrices:" << endl;
+    for (const auto& fila : resultado) {
+        for (int elemento : fila) {
+            cout << elemento << " ";
+        }
+        cout << endl;
+    }
+
+    return 0;
+}

@@ -1,0 +1,60 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+struct Objeto {
+    int peso;
+    int valor;
+};
+
+pair<int, vector<int>> mochila(int capacidad, vector<Objeto>& objetos) {
+    int n = objetos.size();
+    vector<vector<int>> dp(n + 1, vector<int>(capacidad + 1, 0));
+
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= capacidad; j++) {
+            if (objetos[i - 1].peso <= j) {
+                dp[i][j] = max(objetos[i - 1].valor + dp[i - 1][j - objetos[i - 1].peso], dp[i - 1][j]);
+            } else {
+                dp[i][j] = dp[i - 1][j];
+            }
+        }
+    }
+
+    int valorOptimo = dp[n][capacidad];
+    vector<int> objetosSeleccionados;
+
+    int i = n, j = capacidad;
+    while (i > 0 && j > 0) {
+        if (dp[i][j] != dp[i - 1][j]) {
+            objetosSeleccionados.push_back(i - 1);
+            j -= objetos[i - 1].peso;
+        }
+        i--;
+    }
+
+    return make_pair(valorOptimo, objetosSeleccionados);
+}
+
+int main() {
+    int capacidad = 10;
+    vector<Objeto> objetos = {
+        {2, 10},
+        {3, 15},
+        {5, 20}
+    };
+
+    pair<int, vector<int>> resultado = mochila(capacidad, objetos);
+    int valorOptimo = resultado.first;
+    vector<int> objetosSeleccionados = resultado.second;
+
+    cout << "El valor óptimo de la mochila es: " << valorOptimo << endl;
+    cout << "Objetos seleccionados: ";
+    for (int indice : objetosSeleccionados) {
+        cout << indice << " ";
+    }
+    cout << endl;
+
+    return 0;
+}

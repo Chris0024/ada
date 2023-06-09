@@ -1,0 +1,71 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+typedef pair<int, int> PII;  // Pair para representar el peso y el vértice
+
+vector<vector<PII>> grafo;  // Representación del grafo como una lista de adyacencia
+vector<bool> visitado;  // Vector para almacenar los vértices visitados
+
+// Función para agregar una arista entre los vértices u y v con un peso w
+void agregarArista(int u, int v, int w) {
+    grafo[u].push_back(make_pair(w, v));
+    grafo[v].push_back(make_pair(w, u));
+}
+
+// Algoritmo de Prim para encontrar el árbol de expansión mínima
+void prim(int origen) {
+    priority_queue<PII, vector<PII>, greater<PII>> pq;  // Cola de prioridad para almacenar los vértices y pesos ordenados
+
+    pq.push(make_pair(0, origen));  // Se agrega el vértice de origen con un peso de 0
+
+    while (!pq.empty()) {
+        int u = pq.top().second;  // Seleccionar el vértice con menor peso actual
+        pq.pop();
+
+        if (visitado[u])
+            continue;
+
+        visitado[u] = true;
+
+        for (const auto& arista : grafo[u]) {
+            int v = arista.second;
+            int peso = arista.first;
+
+            if (!visitado[v]) {
+                pq.push(make_pair(peso, v));
+            }
+        }
+    }
+}
+
+int main() {
+    int numVertices = 5;
+
+    // Inicializar el grafo y el vector de visitados
+    grafo.resize(numVertices);
+    visitado.resize(numVertices, false);
+
+    // Agregar aristas al grafo (vértice1, vértice2, peso)
+    agregarArista(0, 1, 2);
+    agregarArista(0, 3, 1);
+    agregarArista(1, 2, 3);
+    agregarArista(1, 3, 3);
+    agregarArista(2, 4, 1);
+    agregarArista(3, 4, 2);
+
+    int origen = 0;
+    prim(origen);
+
+    // Mostrar los vértices visitados
+    cout << "Vértices visitados: ";
+    for (int i = 0; i < numVertices; i++) {
+        if (visitado[i])
+            cout << i << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
